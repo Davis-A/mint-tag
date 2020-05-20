@@ -35,6 +35,12 @@ has mrs_by_index => (
   default => sub { {} },
 );
 
+my %COLORS = (
+  commit   => 'bright_blue',
+  rebase   => 'yellow',
+  mr_index => 'green',
+);
+
 sub is_valid_mr_index ($self, $idx) { exists $self->mrs_by_index->{$idx} }
 sub data_for_mr_index ($self, $idx) { $self->mrs_by_index->{$idx} }
 
@@ -47,17 +53,17 @@ sub confirm_plan ($self) {
   say '';
 
   printf("Okay, here's the plan! We're going to build a branch called %s.\n",
-    colored($self->config->target_branch_name, 'bright_blue'),
+    colored($self->config->target_branch_name, $COLORS{commit}),
   );
 
   printf("We're starting with %s, which is at commit %s.\n",
-    colored($self->config->upstream_base, 'bright_blue'),
-    colored(substr($head, 0, 12), 'bright_blue'),
+    colored($self->config->upstream_base, $COLORS{commit}),
+    colored(substr($head, 0, 12), $COLORS{commit}),
   );
 
   if ($self->has_last_build) {
     printf("The last tag I found for this config was %s.\n",
-      colored($self->last_build->tag_name, 'bright_blue'),
+      colored($self->last_build->tag_name, $COLORS{commit}),
     );
   }
 
@@ -229,7 +235,10 @@ sub output_step ($self, $step, $counter_ref) {
   );
 
   if ($step->rebase) {
-    say colored("NB: each of these will be rebased before merging!\n", 'yellow');
+    say colored(
+      "NB: each of these will be rebased before merging!\n",
+      $COLORS{rebase},
+    );
   }
 
   for my $mr ($step->merge_requests) {
@@ -281,7 +290,7 @@ sub output_mr ($self, $step, $mr, $idx) {
     $mr->title,
   );
 
-  say "$idx: $mr_desc";
+  say colored("$idx: ", $COLORS{mr_index}) . $mr_desc;
   $self->mrs_by_index->{$idx} = [ $old,  $mr ];
 }
 
